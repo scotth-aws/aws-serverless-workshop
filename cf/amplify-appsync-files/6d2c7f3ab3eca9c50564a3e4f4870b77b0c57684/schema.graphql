@@ -1,0 +1,244 @@
+
+input CreateUserSubscriptionFilter {
+	id: String!
+	category: String!
+	timeFrame: String!
+}
+
+input CreateUserSubscriptionFilterInput {
+	id: String!
+	category: String!
+	timeFrame: String!
+}
+
+input CreateVideoObjectInput {
+	id: ID
+}
+
+input CreateVodAssetInput {
+	id: ID!
+	title: String!
+	description: String!
+	category: String!
+	vodAssetVideoId: ID
+}
+
+input DeleteUserSubscriptionFilter {
+	id: String!
+}
+
+input DeleteVideoObjectInput {
+	id: ID!
+}
+
+input DeleteVodAssetInput {
+	id: ID!
+}
+
+enum ModelAttributeTypes {
+	binary
+	binarySet
+	bool
+	list
+	map
+	number
+	numberSet
+	string
+	stringSet
+	_null
+}
+
+input ModelBooleanInput {
+	ne: Boolean
+	eq: Boolean
+	attributeExists: Boolean
+	attributeType: ModelAttributeTypes
+}
+
+input ModelFloatInput {
+	ne: Float
+	eq: Float
+	le: Float
+	lt: Float
+	ge: Float
+	gt: Float
+	between: [Float]
+	attributeExists: Boolean
+	attributeType: ModelAttributeTypes
+}
+
+input ModelIDInput {
+	ne: ID
+	eq: ID
+	le: ID
+	lt: ID
+	ge: ID
+	gt: ID
+	contains: ID
+	notContains: ID
+	between: [ID]
+	beginsWith: ID
+	attributeExists: Boolean
+	attributeType: ModelAttributeTypes
+	size: ModelSizeInput
+}
+
+input ModelIntInput {
+	ne: Int
+	eq: Int
+	le: Int
+	lt: Int
+	ge: Int
+	gt: Int
+	between: [Int]
+	attributeExists: Boolean
+	attributeType: ModelAttributeTypes
+}
+
+input ModelSizeInput {
+	ne: Int
+	eq: Int
+	le: Int
+	lt: Int
+	ge: Int
+	gt: Int
+	between: [Int]
+}
+
+enum ModelSortDirection {
+	ASC
+	DESC
+}
+
+input ModelStringInput {
+	ne: String
+	eq: String
+	le: String
+	lt: String
+	ge: String
+	gt: String
+	contains: String
+	notContains: String
+	between: [String]
+	beginsWith: String
+	attributeExists: Boolean
+	attributeType: ModelAttributeTypes
+	size: ModelSizeInput
+}
+
+input ModelVideoObjectConditionInput {
+	and: [ModelVideoObjectConditionInput]
+	or: [ModelVideoObjectConditionInput]
+	not: ModelVideoObjectConditionInput
+}
+
+type ModelVideoObjectConnection {
+	items: [VideoObject]!
+	nextToken: String
+}
+
+input ModelVideoObjectFilterInput {
+	id: ModelIDInput
+	and: [ModelVideoObjectFilterInput]
+	or: [ModelVideoObjectFilterInput]
+	not: ModelVideoObjectFilterInput
+}
+
+input ModelVodAssetConditionInput {
+	title: ModelStringInput
+	description: ModelStringInput
+	and: [ModelVodAssetConditionInput]
+	or: [ModelVodAssetConditionInput]
+	not: ModelVodAssetConditionInput
+	vodAssetVideoId: ModelIDInput
+}
+
+type ModelVodAssetConnection {
+	items: [VodAsset]!
+	nextToken: String
+}
+
+input ModelVodAssetFilterInput {
+	id: ModelIDInput
+	title: ModelStringInput
+	description: ModelStringInput
+	category: ModelStringInput
+	createdAt: ModelStringInput
+	and: [ModelVodAssetFilterInput]
+	or: [ModelVodAssetFilterInput]
+	not: ModelVodAssetFilterInput
+	vodAssetVideoId: ModelIDInput
+}
+
+type Mutation {
+	createUserSubscriptionFilter(input: CreateUserSubscriptionFilterInput!): UserSubscriptionFilter
+	updateUserSubscriptionFilter(input: UpdateUserSubscriptionFilterInput!): UserSubscriptionFilter
+	createVodAsset(input: CreateVodAssetInput!, condition: ModelVodAssetConditionInput): VodAsset
+	updateVodAsset(input: UpdateVodAssetInput!, condition: ModelVodAssetConditionInput): VodAsset
+	deleteVodAsset(input: DeleteVodAssetInput!, condition: ModelVodAssetConditionInput): VodAsset
+	createVideoObject(input: CreateVideoObjectInput!, condition: ModelVideoObjectConditionInput): VideoObject
+	updateVideoObject(input: UpdateVideoObjectInput!, condition: ModelVideoObjectConditionInput): VideoObject
+	deleteVideoObject(input: DeleteVideoObjectInput!, condition: ModelVideoObjectConditionInput): VideoObject
+}
+
+type Query {
+	getVodAsset(id: ID!): VodAsset
+	getUserSubscriptionFilter(id: String!): UserSubscriptionFilter
+	listVodAssets(filter: ModelVodAssetFilterInput, limit: Int, nextToken: String): ModelVodAssetConnection
+	getVideoObject(id: ID!): VideoObject
+	listVideoObjects(filter: ModelVideoObjectFilterInput, limit: Int, nextToken: String): ModelVideoObjectConnection
+}
+
+type Subscription {
+	onCreateVideoObject: VideoObject
+		@aws_subscribe(mutations: ["createVideoObject"])
+	onCreateVodAsset(filter: String): VodAsset
+		@aws_subscribe(mutations: ["createVodAsset"])
+	onUpdateVideoObject: VideoObject
+		@aws_subscribe(mutations: ["updateVideoObject"])
+	onDeleteVideoObject: VideoObject
+		@aws_subscribe(mutations: ["deleteVideoObject"])
+}
+
+input UpdateUserSubscriptionFilterInput {
+	id: String!
+	category: String!
+	timeFrame: String!
+}
+
+input UpdateVideoObjectInput {
+	id: ID!
+}
+
+input UpdateVodAssetInput {
+	id: ID!
+	title: String
+	description: String
+	category: String!
+	vodAssetVideoId: ID
+}
+
+type UserSubscriptionFilter {
+	id: String!
+	category: String!
+	timeFrame: String!
+	createdAt: AWSDateTime!
+	updatedAt: AWSDateTime!
+}
+
+type VideoObject {
+	id: ID!
+	createdAt: AWSDateTime!
+	updatedAt: AWSDateTime!
+}
+
+type VodAsset {
+	id: ID!
+	title: String!
+	description: String!
+	category: String!
+	video: VideoObject
+	createdAt: AWSDateTime!
+	updatedAt: AWSDateTime!
+	vodAssetVideoId: ID
+}

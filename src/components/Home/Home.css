@@ -1,0 +1,46 @@
+.App {
+  text-align: center;
+  justify-content: center;
+}
+.App-logo {
+  height: 40vmin;
+}
+.Link {
+  text-align: left;
+  justify-content: left;
+  background: #E1E4EA;  /* fallback for old browsers */
+background: -webkit-linear-gradient(to top, #1F1C18, #8E0E00);  /* Chrome 10-25, Safari 5.1-6 */
+background: linear-gradient(to top, #FF9900, #ffc300); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+}
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+.App-header {
+  background-color: #edeff3;
+  min-height: 50vh;
+  width:100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+background: #E1E4EA;  /* fallback for old browsers */
+background: -webkit-linear-gradient(to top, #1F1C18, #8E0E00);  /* Chrome 10-25, Safari 5.1-6 */
+background: linear-gradient(to top, #0f0f109b, #0f0f109b); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+
+}
+
+.App-link {
+  color: #09d3ac;
+}
+
+.gridview {
+    padding: 0;
+}

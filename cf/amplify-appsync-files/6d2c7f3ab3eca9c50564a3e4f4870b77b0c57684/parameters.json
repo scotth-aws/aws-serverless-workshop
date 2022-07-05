@@ -1,0 +1,13 @@
+{
+    "AppSyncApiName": "vodscotth",
+    "DynamoDBBillingMode": "PAY_PER_REQUEST",
+    "DynamoDBEnableServerSideEncryption": false,
+    "AuthCognitoUserPoolId": {
+        "Fn::GetAtt": [
+            "authvodscotth133eebea",
+            "Outputs.UserPoolId"
+        ]
+    },
+    "S3DeploymentBucket": "amplify-vodm1820-dev-152847-deployment",
+    "S3DeploymentRootKey": "amplify-appsync-files/6d2c7f3ab3eca9c50564a3e4f4870b77b0c57684"
+}

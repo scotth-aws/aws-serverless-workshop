@@ -1,0 +1,282 @@
+Description: >-
+  {"createdOn":"Mac","createdBy":"Amplify","createdWith":"7.6.26","stackType":"video-video","metadata":{}}
+Parameters:
+  env:
+    Type: String
+    Description: The environment name. e.g. Dev, Test, or Production.
+    Default: NONE
+  authRoleName:
+    Type: String
+    Description: Arn for authRoleArn
+    Default: NONE
+  unauthRoleName:
+    Type: String
+    Description: Arn for authRoleArn
+    Default: NONE
+  GraphQLAPIId:
+    Type: String
+    Description: API ID
+    Default: NONE
+  GraphQLEndpoint:
+    Type: String
+    Description: API Endpoint URL
+    Default: NONE
+  s3UUID:
+    Type: String
+    Description: NOT USED ALREADY INSERTED W/ AMPLIFY VIDEO
+    Default: xxxxx-xxxxx
+  pS3:
+    Type: String
+    Description: Store template and lambda package
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9-_]*'
+  pS3InputName:
+    Type: String
+    Description: Store template and lambda package
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9-_]*'
+  pS3OutputName:
+    Type: String
+    Description: Store template and lambda package
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9-_]*'  
+  pSourceFolder:
+    Type: String
+    Description: Store template and lambda package
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9-_]*'
+    Default: vod-helpers
+  pProjectName:
+    Type: String
+    Description: ProjectName
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9-_]*'
+    Default: m1820vodservice
+  pSnsTopicName:
+    Type: String
+    Description: Name of the SNS topic for MediaConvert status events
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9-_]*'
+    Default: AmplifyMediaConvertStatusEvents
+Conditions:
+  HasEnvironmentParameter:
+    Fn::Not:
+      - Fn::Equals:
+          - Ref: env
+          - NONE
+Outputs:
+  oVODInputS3:
+    Description: Put source video here for processing and hosting by Amplify Video
+    Value:
+      Fn::GetAtt:
+        - rS3InputBucket
+        - Outputs.oInputBucketName
+  oVODOutputS3:
+    Description: Amplify Video hosts transcoded video content in this bucket
+    Value:
+      Fn::GetAtt:
+        - rS3OutputBucket
+        - Outputs.oOutputBucketName
+  oVodOutputUrl:
+    Description: Amplify Video CloudFront Url
+    Value:
+      Fn::GetAtt:
+        - rS3OutputBucket
+        - Outputs.oOutputUrl
+Resources:
+  rS3InputBucket:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Fn::Sub: >-
+          https://s3.amazonaws.com/${pS3}/${pSourceFolder}/S3InputBucket.template
+      Parameters:
+        authRoleName:
+          Ref: authRoleName
+        pBucketName:
+          Ref: pS3InputName
+  rS3OutputBucket:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Fn::Sub: >-
+          https://s3.amazonaws.com/${pS3}/${pSourceFolder}/S3OutputBucket.template
+      Parameters:
+        authRoleName:
+          Ref: authRoleName
+        pBucketName:
+          Ref: pS3OutputName
+        pCloudfrontEnabled: false
+  rMediaConvertTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Fn::Sub: >-
+          https://s3.amazonaws.com/${pS3}/${pSourceFolder}/CreateJobTemplate.template
+      Parameters:
+        pProjectName:
+          Ref: pProjectName
+        env:
+          Ref: env
+  rInputLambdaTriggerFunction:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Fn::Sub: >-
+          https://s3.amazonaws.com/${pS3}/${pSourceFolder}/InputTriggerLambda.template
+      Parameters:
+        pS3:
+          Ref: pS3
+        pSourceFolder:
+          Ref: pSourceFolder
+        pInputS3:
+          Fn::GetAtt:
+            - rS3InputBucket
+            - Outputs.oInputBucketName
+        pInputS3Arn:
+          Fn::GetAtt:
+            - rS3InputBucket
+            - Outputs.oInputBucketArn
+        pOutputS3:
+          Fn::GetAtt:
+            - rS3OutputBucket
+            - Outputs.oOutputBucketName
+        pOutputS3Arn:
+          Fn::GetAtt:
+            - rS3OutputBucket
+            - Outputs.oOutputBucketArn
+        pMediaConvertTemplate:
+          Fn::GetAtt:
+            - rMediaConvertTemplate
+            - Outputs.oJobArn
+        pTemplateType: DASH
+        pFunctionHash: 75496d566f6b48716a53
+        GraphQLAPIId:
+          Ref: GraphQLAPIId
+        GraphQLEndpoint:
+          Ref: GraphQLEndpoint
+        env:
+          Ref: env
+        pFunctionName:
+          Fn::If:
+            - HasEnvironmentParameter
+            - Fn::Join:
+                - '-'
+                - - Ref: pProjectName
+                  - Ref: env
+                  - inputWatcher
+            - Fn::Join:
+                - '-'
+                - - Ref: pProjectName
+                  - inputWatcher
+  rOutputLambdaTriggerFunction:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Fn::Sub: >-
+          https://s3.amazonaws.com/${pS3}/${pSourceFolder}/OutputTriggerLambda.template
+      Parameters:
+        pS3:
+          Ref: pS3
+        pSourceFolder:
+          Ref: pSourceFolder
+        pOutputS3:
+          Fn::GetAtt:
+            - rS3OutputBucket
+            - Outputs.oOutputBucketName
+        pOutputS3Arn:
+          Fn::GetAtt:
+            - rS3OutputBucket
+            - Outputs.oOutputBucketArn
+        pFunctionHash: 667550667143764d734d
+        env:
+          Ref: env
+        GraphQLAPIId:
+          Ref: GraphQLAPIId
+        GraphQLEndpoint:
+          Ref: GraphQLEndpoint
+        pFunctionName:
+          Fn::If:
+            - HasEnvironmentParameter
+            - Fn::Join:
+                - '-'
+                - - Ref: pProjectName
+                  - Ref: env
+                  - outputWatcher
+            - Fn::Join:
+                - '-'
+                - - Ref: pProjectName
+                  - outputWatcher
+  rLambdaTriggerSetup:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Fn::Sub: >-
+          https://s3.amazonaws.com/${pS3}/${pSourceFolder}/S3TriggerSetup.template
+      Parameters:
+        pS3:
+          Ref: pS3
+        pSourceFolder:
+          Ref: pSourceFolder
+        pInputS3:
+          Fn::GetAtt:
+            - rS3InputBucket
+            - Outputs.oInputBucketName
+        pInputS3Arn:
+          Fn::GetAtt:
+            - rS3InputBucket
+            - Outputs.oInputBucketArn
+        pOutputS3:
+          Fn::GetAtt:
+            - rS3OutputBucket
+            - Outputs.oOutputBucketName
+        pOutputS3Arn:
+          Fn::GetAtt:
+            - rS3OutputBucket
+            - Outputs.oOutputBucketArn
+        pInputTriggerLambda:
+          Fn::GetAtt:
+            - rInputLambdaTriggerFunction
+            - Outputs.oLambdaFunction
+        pOutputTriggerLambda:
+          Fn::GetAtt:
+            - rOutputLambdaTriggerFunction
+            - Outputs.oLambdaFunction
+        pFunctionHash: 356e34764c6549757042
+        pFunctionName:
+          Fn::If:
+            - HasEnvironmentParameter
+            - Fn::Join:
+                - '-'
+                - - Ref: pProjectName
+                  - Ref: env
+                  - cfTrigger
+            - Fn::Join:
+                - '-'
+                - - Ref: pProjectName
+                  - cfTrigger
+  rSnsInvokeLambdaSetup:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Fn::Sub: https://s3.amazonaws.com/${pS3}/${pSourceFolder}/SnsSetup.template
+      Parameters:
+        env:
+          Ref: env
+        pS3:
+          Ref: pS3
+        pSourceFolder:
+          Ref: pSourceFolder
+        pFunctionHash: 30687636766b52416c4d
+        GraphQLAPIId:
+          Ref: GraphQLAPIId
+        GraphQLEndpoint:
+          Ref: GraphQLEndpoint
+        pFunctionName:
+          Fn::If:
+            - HasEnvironmentParameter
+            - Fn::Join:
+                - '-'
+                - - Ref: pProjectName
+                  - Ref: env
+                  - MediaconvertStatusLambda
+            - Fn::Join:
+                - '-'
+                - - Ref: pProjectName
+                  - MediaconvertStatusLambda
+        pSnsTopicName:
+          Ref: pSnsTopicName
